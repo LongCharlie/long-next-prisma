@@ -10,14 +10,38 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Post {
-  id    String @id @default(uuid())
-  title String
-  text  String
-
-  // To return `Date`s intact through the API we use transformers
-  // https://trpc.io/docs/v11/data-transformers
-  // This is unique so it can be used for cursor-based pagination
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+enum Role {
+  user
+  admin
 }
+
+model User {
+  id    String @id @default(uuid())
+  username String @unique
+  password String
+  email String @unique
+  role Role @default(user)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contents Content[]
+
+}
+
+model Content{
+  id String @id @default(uuid())
+  title String @db.VarChar(255)
+  author String @db.VarChar(255)
+  resourceUrl String @db.VarChar(255)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceUrl])
+}
+
+
